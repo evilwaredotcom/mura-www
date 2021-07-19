@@ -24,7 +24,7 @@ import { CollectionLayoutAlternatingRows as AlternatingRows } from '@murasoftwar
 import { CollectionLayoutMasonry as Masonry }from '@murasoftware/next-modules-bs4';
 import { CollectionLayoutSlickSlider as SlickSlider } from '@murasoftware/next-modules-bs4';
 
-import { UtilityNav } from 'src/modules/UtilityNav';
+import { UtilityNav } from '@murasoftware/next-modules-bs4';
 
 import { Scaffold, getDynamicProps as getScaffoldDynamicProps } from 'src/modules/scaffold/Scaffold';
 import { ScaffoldManager, getDynamicProps as getScaffoldManagerDynamicProps } from 'src/modules/scaffold/ScaffoldManager';
