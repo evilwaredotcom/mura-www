@@ -26,6 +26,9 @@ import { CollectionLayoutSlickSlider as SlickSlider } from '@murasoftware/next-m
 
 import { UtilityNav } from 'src/modules/UtilityNav';
 
+import { Scaffold, getDynamicProps as getScaffoldDynamicProps } from 'src/modules/scaffold/Scaffold';
+import { ScaffoldManager, getDynamicProps as getScaffoldManagerDynamicProps } from 'src/modules/scaffold/ScaffoldManager';
+
 import { GatedAsset } from '@murasoftware/next-modules-bs4';
 import { Gist } from '@murasoftware/next-modules-bs4';
 // import { default as SearchResults, getDynamicProps as getSearchResultsDynamicProps } from '@components/SearchResults';
@@ -222,6 +225,18 @@ let moduleRegistry = [
     name: 'UtilityNav',
     component: UtilityNav,
     SSR: false    
+  },
+  {
+    name: 'Scaffold',
+    component: Scaffold,
+    getDynamicProps: getScaffoldDynamicProps,
+    SSR: false
+  },
+  {
+    name: 'ScaffoldManager',
+    component: ScaffoldManager,
+    getDynamicProps: getScaffoldManagerDynamicProps,
+    SSR: false
   },
   {
     name: 'SearchResultsLayout',

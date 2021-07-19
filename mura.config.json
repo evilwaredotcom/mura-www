@@ -477,6 +477,17 @@
 					}
 				]
 			},
+			"Scaffold":{
+				"name":"Scaffold",
+				"contenttypes":"*"
+			},
+			"ScaffoldManager":{
+				"name":"Scaffold Manager",
+				"contenttypes":"*",
+				"configurator":[
+					{"type":"select","name":"scaffoldsource","label":"Source","labels":["scaffoldTestOne","endpointone","kickfire"],"options":["scaffoldTestOne","endpointone","kickfire"]}
+				]				
+			},
 			"SearchResults":{
 				"name":"Search Results",
 				"contenttypes":"*",
