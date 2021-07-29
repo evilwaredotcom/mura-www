@@ -1,23 +1,51 @@
+//const firebase = require("firebase");
+// Required for side-effects
+//require("firebase/firestore");
 import ApiConfig from "../api/ApiConfig";
 
-export default class ScaffoldTestOne extends ApiConfig {
+export default class FirebaseAnimals extends ApiConfig {
 	constructor() {
 
+		/*
+			https://firestore.googleapis.com/v1/projects/animals-deb2a/databases/(default)/documents/animals/
+			<script src="https://www.gstatic.com/firebasejs/8.8.0/firebase-app.js"></script>
+			<script src="https://www.gstatic.com/firebasejs/8.8.0/firebase-firestore.js"></script>
+
+			legs": {
+			"integerValue": "4"
+			},
+			"hasfur": {
+			"booleanValue": true
+			},
+			"iscarnivore": {
+			"booleanValue": true
+			},
+			"name": {
+			"stringValue": "kitty"
+			},
+			"type": {
+			"stringValue": "cat"
+			}
+
+		*/
+
+
+		
 		const _config = [
 			{
-				"field": "title",
-				"label": "Title",
+				"field": "name",
+				"label": "Name",
 				"datatype": "varchar",
 				"rendertype": "textfield",
 				"list": true,
 				"length": 100
 			},
 			{
-				"field": "description",
-				"label": "Description",
-				"datatype": "text",
-				"rendertype": "textarea",
-				"list": false
+				"field": "type",
+				"label": "Type",
+				"datatype": "varchar",
+				"rendertype": "textfield",
+				"list": true
 			},
 			{
 				"field": "isactive",
@@ -27,33 +55,33 @@ export default class ScaffoldTestOne extends ApiConfig {
 				"list": true
 			},
 			{
-				"field": "choicesdropdown",
-				"label": "The Radio Choice",
-				"datatype": "varchar",
+				"field": "hasfur",
+				"label": "Has Fur",
+				"datatype": "int",
 				"rendertype": "dropdown",
-				"optionvaluelist": [0,1,2.3],
-				"optionlist": ["zero","one","two","three"],
+				"optionvaluelist": [0,1],
+				"optionlist": ["no","yes"],
 				"default": 1,
 				"list": false
 			},
 			{
-				"field": "choicescheckbox",
-				"label": "Check'A'Box",
-				"datatype": "varchar",
-				"rendertype": "checkbox",
-				"optionvaluelist": [0,1,2.3],
-				"optionlist": ["zero","one","two","three"],
-				"default": 2,
-				"list": true
+				"field": "iscarnivore",
+				"label": "Is Carnivore",
+				"datatype": "int",
+				"rendertype": "dropdown",
+				"optionvaluelist": [0,1],
+				"optionlist": ["no","yes"],
+				"default": 1,
+				"list": false
 			},
 			{
-				"field": "choicesradio",
-				"label": "The Radio Choice",
+				"field": "legs",
+				"label": "Number of Legs",
 				"datatype": "varchar",
-				"rendertype": "radio",
-				"optionvaluelist": [0,1,2.3],
-				"optionlist": ["zero","one","two","three"],
-				"default": 2,
+				"rendertype": "dropdown",
+				"optionvaluelist": [0,1,2.3,4,6,8],
+				"optionlist": [0,1,2.3,4,6,8],
+				"default": 4,
 				"list": false
 			}
 		];
@@ -62,10 +90,14 @@ export default class ScaffoldTestOne extends ApiConfig {
 	}
 
 	get = async (params = {}) => {
-		return this.getFeed(params);
+		// https://firestore.googleapis.com/v1/projects/animals-deb2a/databases/(default)/documents/animals/
+				
 	}
 
 	getFeed = async (params = {}) => {
+
+		console.log("FIREBASE SAYS: I WAS CALLED!");
+
 //		const response = await Mura.getEntity('proxyDecoratorBean');	
 //		console.log(response);
 		const muraObj = Mura.getBean('muraObject');

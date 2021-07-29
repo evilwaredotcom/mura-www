@@ -20,7 +20,6 @@ export async function getServerSideProps(context) {
 
 export default function Page(props) {
   setMuraConfig(muraConfig);
-  
   const router = useRouter();
   /*
    When in a route not defined in static routes it's intitially missing props

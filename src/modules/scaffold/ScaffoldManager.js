@@ -3,7 +3,7 @@ import Mura from 'mura.js';
 import { getMuraConfig } from '@murasoftware/next-core';
 import Scaffold from './Scaffold';
 import ScaffoldConfigurations from './configurations/ScaffoldConfigurations';
-import ScaffoldConfig from './configurations/ScaffoldConfig';
+import ApiConfig from './api/ApiConfig';
 
 export function ScaffoldManager( props ) {
 	const objectparams = Object.assign({}, props);
@@ -79,6 +79,8 @@ export function ScaffoldManager( props ) {
 				getObjectData(objectparams, scaffoldProperties, objectProperties, setCollection, setScaffoldProperties, setObjectProperties);
 			}
 		}, []);
+
+		console.log('scaffoldProperties',scaffoldProperties);
 
 		if(scaffoldProperties && scaffoldProperties.length) {
 			switch(appState) {
@@ -197,23 +199,32 @@ export const renderValue = (val) => {
 }
 
 export const getDynamicProps = async (objectparams,scaffoldProperties,objectProperties,appState) => {
+	const scaffoldConfigurations = new ScaffoldConfigurations();
+	const apiEndpoint = scaffoldConfigurations.getConfiguration(objectparams.scaffoldsource);
 
-	const scaffoldConfiguration = new ScaffoldConfigurations();
-	const configuration = scaffoldConfiguration.getConfiguration(objectparams.scaffoldsource);
-
-	if(configuration instanceof ScaffoldConfig) {
-		scaffoldProperties = configuration.getConfig(objectparams.scaffoldsource);
+	if(apiEndpoint instanceof ApiConfig) {
+		scaffoldProperties = apiEndpoint.getConfig(objectparams.scaffoldsource);
 	}
 	else {
 		console.log("CONFIGURATION NOT FOUND IN ScaffoldConfigurations");
 	}
 
+	console.log("DATAPROPS",scaffoldProperties);
+
+	const apiEntity = apiEndpoint.getEntity(objectparams.scaffoldsource,apiEndpoint);
+
+	console.log("ENTITY",apiEndpoint);
+	
 	if (!objectProperties.length) {
-		objectProperties = configuration.get(objectparams,{});
+		objectProperties = apiEndpoint.get(objectparams,{});
 	}
 
-	const feed = configuration.getFeed(objectparams,{});
+
+	
+	const feed = apiEndpoint.getFeed(objectparams,{});
 	//const feed = await Mura.getFeed(objectparams.scaffoldsource);
+
+	return feed;
 
 	if(objectparams.maxitems) {
 		feed.maxItems(objectparams.maxitems);

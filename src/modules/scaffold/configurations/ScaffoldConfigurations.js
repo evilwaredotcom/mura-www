@@ -1,9 +1,18 @@
+import Mura from "mura.js";
+import FirebaseAnimals from "./firebaseanimals";
+import KickfireLocale from "./kickfirelocale";
 import ScaffoldTestOne from "./ScaffoldTestOne";
 const configurations = [];
 
 export default class ScaffoldConfigurations {
 	constructor() {
 		configurations['scaffoldTestOne'] = new ScaffoldTestOne();
+		configurations['kickfirelocale'] = new KickfireLocale();
+		configurations['firebaseanimals'] = new FirebaseAnimals();
+	}
+
+	getConfigurations = () => {
+		return configurations;
 	}
 
 	getConfiguration = (name) => {
@@ -13,8 +22,11 @@ export default class ScaffoldConfigurations {
 		}
 		else {
 			const obj = configurations[name];
-			console.log("NAMED",obj.getConfig());
 			return obj;
 		}
+	}
+
+	addConfiguration = (name,obj) => {
+		configurations[name] = new obj();
 	}
 }
