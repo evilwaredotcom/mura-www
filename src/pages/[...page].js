@@ -30,7 +30,8 @@ export default function Page(props) {
     content: {
       displayregions: { primarycontent,footer,header } = {},
     },
-    moduleStyleData
+    moduleStyleData,
+    queryParams = {}
   } = props;
 
   if(!content){
@@ -58,6 +59,7 @@ export default function Page(props) {
             primarycontent={primarycontent}
             footer={footer}
             displayregions={displayregions}
+            queryParams={queryParams}
             props={props}
           />
           <div dangerouslySetInnerHTML={{__html:props.codeblocks.footer}}/>
