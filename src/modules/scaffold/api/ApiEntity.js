@@ -1,9 +1,14 @@
 import Mura from "mura.js";
 
 export class ApiEntity extends Mura.Entity  {
-	constructor({properties,requestcontext}) {
-		super.init(properties,requestcontext);
+	constructor({properties}) {
+		super(arguments);
+		this.init(properties);
 		return this;
+	}
+
+	init(properties) {
+		super.init(properties);
 	}
 
 	loadBy = async (propertyName, propertyValue, params) => {
@@ -19,6 +24,10 @@ export class ApiEntity extends Mura.Entity  {
 		params[propertyName] = propertyValue;
 
 		return params;
+	}
+
+	setItems( items ) {
+		this.items = items;
 	}
 
 	save = async ({context,data}) => {

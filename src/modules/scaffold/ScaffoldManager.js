@@ -80,8 +80,6 @@ export function ScaffoldManager( props ) {
 			}
 		}, []);
 
-		console.log('scaffoldProperties',scaffoldProperties);
-
 		if(scaffoldProperties && scaffoldProperties.length) {
 			switch(appState) {
 				case "new":
@@ -200,32 +198,39 @@ export const renderValue = (val) => {
 
 export const getDynamicProps = async (objectparams,scaffoldProperties,objectProperties,appState) => {
 	const scaffoldConfigurations = new ScaffoldConfigurations();
-	const apiEndpoint = scaffoldConfigurations.getConfiguration(objectparams.scaffoldsource);
+	const apiConfig = scaffoldConfigurations.getConfiguration(objectparams.scaffoldsource);
 
-	if(apiEndpoint instanceof ApiConfig) {
-		scaffoldProperties = apiEndpoint.getConfig(objectparams.scaffoldsource);
+	if(apiConfig instanceof ApiConfig) {
+		const scaffoldFields = apiConfig.getScaffoldFields(objectparams.scaffoldsource);
 	}
 	else {
 		console.log("CONFIGURATION NOT FOUND IN ScaffoldConfigurations");
+		return {};
 	}
 
-	console.log("DATAPROPS",scaffoldProperties);
+/*
+	const entity = await Mura.getEntity(objectparams.scaffoldsource)
+		.loadBy('user_id',1)
+		.then(function(item){
+			console.log("getDynamicProps SCAFFOLDMANAGER",item);
+		  },
+		  function(error) {
+			  console.log("getDynamicProps SCAFFOLDMANAGER Error",error);
+		  });
 
-	const apiEntity = apiEndpoint.getEntity(objectparams.scaffoldsource,apiEndpoint);
+*/
 
-	console.log("ENTITY",apiEndpoint);
-	
-	if (!objectProperties.length) {
-		objectProperties = apiEndpoint.get(objectparams,{});
-	}
-
-
-	
-	const feed = apiEndpoint.getFeed(objectparams,{});
-	//const feed = await Mura.getFeed(objectparams.scaffoldsource);
-
-	return feed;
-
+		const feed = await  Mura.getFeed(objectparams.scaffoldsource);
+		/*
+		const data = await feed.getQuery()
+			.then(function(items){
+				return items;
+		  },
+		  function(error) {
+			  console.log("ERROR",error);
+		});
+		*/
+	/*
 	if(objectparams.maxitems) {
 		feed.maxItems(objectparams.maxitems);
 	}
@@ -241,14 +246,17 @@ export const getDynamicProps = async (objectparams,scaffoldProperties,objectProp
 	if(objectparams.sortby) {
 		feed.sort(objectparams.sortby,objectparams.sortdirection );
 	}
-
+	*/
+	console.log("FEEEEED",feed);
 	const query = await feed.getQuery();
+	console.log("QUEEEERY",query);
 	
 	return {
 			scaffoldProperties: scaffoldProperties,
 			objectProperties: objectProperties,
 			feed: query.getAll()
 	};
+
 }
 
 export const getLayout=function(layout) {

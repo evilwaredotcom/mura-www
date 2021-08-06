@@ -495,7 +495,7 @@
 				"name":"Scaffold Manager",
 				"contenttypes":"*",
 				"configurator":[
-					{"type":"select","name":"scaffoldsource","label":"Source","labels":["scaffoldTestOne","firebaseanimals","kickfirelocale"],"options":["scaffoldTestOne","firebaseanimals","kickfirelocale"]}
+					{"type":"select","name":"scaffoldsource","label":"Source","labels":["scaffoldTestOne","firebaseanimals","kickfirelocale","pddeals"],"options":["scaffoldTestOne","firebaseanimals","kickfirelocale","pddeals"]}
 				]				
 			},
 			"SearchResults":{

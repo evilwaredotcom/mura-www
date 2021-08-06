@@ -1,14 +1,26 @@
 import Mura from "mura.js";
 import FirebaseAnimals from "./firebaseanimals";
-import KickfireLocale from "./kickfirelocale";
+import KickfireLocale from "./kickfire/kickfirelocale";
 import ScaffoldTestOne from "./ScaffoldTestOne";
-const configurations = [];
+import PdDeals from "./pipedrive/pddeals";
+
 
 export default class ScaffoldConfigurations {
 	constructor() {
-		configurations['scaffoldTestOne'] = new ScaffoldTestOne();
-		configurations['kickfirelocale'] = new KickfireLocale();
-		configurations['firebaseanimals'] = new FirebaseAnimals();
+		this.configurations = {};
+//		this.configurations['scaffoldTestOne'] = ScaffoldTestOne;
+		this.configurations['Kickfirelocale'] = new KickfireLocale();
+		this.configurations['Pddeals'] = new PdDeals();
+//		this.configurations['firebaseanimals'] = FirebaseAnimals;
+		//Mura.feeds[this.entityname]= new ApiFeed();
+		this.registerConfigurations();
+	}
+
+	registerConfigurations() {
+		for(var c in this.configurations) {
+			console.log("CONF",this.configurations[c]);
+			this.configurations[c].registerEntity();
+		}
 	}
 
 	getConfigurations = () => {
@@ -16,17 +28,20 @@ export default class ScaffoldConfigurations {
 	}
 
 	getConfiguration = (name) => {
-		if(configurations[name] == undefined) {
-			console.log("CONFIG DOES NOT EXIST!");
+		var caseName = name.charAt(0).toUpperCase() + name.slice(1);
+		if(this.configurations[caseName] == undefined) {
+			console.log("CONFIG DOES NOT EXIST",caseName);
 			return {}
 		}
 		else {
-			const obj = configurations[name];
+			const obj = this.configurations[caseName];
 			return obj;
 		}
 	}
 
 	addConfiguration = (name,obj) => {
-		configurations[name] = new obj();
+		var caseName = name.charAt(0).toUpperCase() + name.slice(1);
+
+		this.configurations[caseName] = new obj();
 	}
 }

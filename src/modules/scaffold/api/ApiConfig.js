@@ -2,44 +2,71 @@ import Mura from "mura.js";
 import { ApiEntity } from "./ApiEntity";
 import { ApiFeed } from "./ApiFeed";
 
+/*
+
+	Entities/Feeds are registered via Api
+
+*/
+
 export default class ApiConfig {
-	constructor({config,entityname}) {
+	constructor({config}) {
 		this.config = config;
+		this.fields = config.fields;
+		this.entityname = config.entityname;
+		this.properties = [];
+		this.EntityObject = {};
+		this.FeedObject = {};
 
-		this.initProperties(config,entityname);
-
-		Mura.entities[entityname]= ApiEntity;
-		Mura.feeds[entityname]= ApiFeed;
+		this.initMuraProperties(this.fields);
+		console.log("API",this.properties);
 	}
 
-	initProperties( config ) {
-		this.properties.entityname = entityname;
-		for(var p in config) {
-			this.properties[p.field] = p.default ? p.default : '';
+	registerEntity = async() => {
+		Mura.entities[this.getEntityName()] = this.getEntityObject();
+		Mura.feeds[this.getEntityName()] = this.getFeedObject();
+	}
+
+	getEntityObject = () => {
+		return this.EntityObject;
+	}
+
+	getFeedObject = () => {
+		return this.FeedObject;
+	}
+
+	initMuraProperties( fields = [] ) {
+		fields = fields.length ? fields : this.fields;
+//		this.properties.entityname = entityname;
+		for(var p = 0; p < fields.length;p++) {
+			this.properties.push(fields[p]);
 		}
 	}
+
 	setProperties( properties ) {
 		this.properties = properties;
 	}
 
+	getConfiguration = () => {
+		return this.getConfig();
+	}
 	getConfig = () => {
 		return this.config;
 	}
 	setConfig = (config) => {
 		this.config = config;
 	}
-
-	getEntity(entityname) {
-		const entity = Mura.getEntity(entityname).init(this.properties);//,self._requestcontext);
-		return entity;
+	getScaffoldFields = () => {
+		return this.fields;
 	}
-
-	getFeed(entityname) {
-		const entity = Mura.getEntity(entityname).init(Mura.get('siteid'),entityname);//,self._requestcontext);
-		console.log("Feed",feed);
-		return feed;
+	getProperties = () => {
+		return this.properties;
 	}
-
+	getApiEntity() {
+		return ApiEntity;
+	}
+	getApiFeed() {
+		return ApiFeed;
+	}
 	resetProperties = (properties) => {
 		var newProperties = properties;
 		newProperties.endindex = newProperties.totalitems = 0;
