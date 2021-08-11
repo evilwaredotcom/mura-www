@@ -3,7 +3,6 @@ import Mura from "mura.js";
 export class ApiFeed extends Mura.Feed  {
 	constructor(siteid, entityname, requestcontext) {
 		super(siteid, entityname, requestcontext);
-		this.init(siteid, entityname);
 		this.configuration = {};
 		this.endpoint = '';
 		this.queryString = '?cacheid=' + Math.random();
