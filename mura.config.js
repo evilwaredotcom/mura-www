@@ -228,15 +228,11 @@ let moduleRegistry = [
   },
   {
     name: 'Scaffold',
-    component: Scaffold,
-    getDynamicProps: getScaffoldDynamicProps,
-    SSR: false
+    component: Scaffold
   },
   {
     name: 'ScaffoldManager',
-    component: ScaffoldManager,
-    getDynamicProps: getScaffoldManagerDynamicProps,
-    SSR: false
+    component: ScaffoldManager
   },
   {
     name: 'SearchResultsLayout',

@@ -1,15 +1,6 @@
 import Mura from "mura.js";
 
 export class ApiEntity extends Mura.Entity  {
-	constructor({properties}) {
-		super(arguments);
-		this.init(properties);
-		return this;
-	}
-
-	init(properties) {
-		super.init(properties);
-	}
 
 	loadBy = async (propertyName, propertyValue, params) => {
 		self = this;

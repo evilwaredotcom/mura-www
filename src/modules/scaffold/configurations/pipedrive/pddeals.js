@@ -7,6 +7,7 @@ export default class PdDeals extends ApiConfig {
 	constructor() {
 		
 		const _config = {
+			endpoint: Mura.getAPIEndpoint() + '/proxy/pipedrive/deals',
 			entityname: 'Pddeals',
 			fields: [
 					{
@@ -32,10 +33,7 @@ export default class PdDeals extends ApiConfig {
 		super({config:_config});
 
 		this.entityname = _config.entityname;
-
-		// custom here
-//		this.apikey = 'bbb206de60fd8e5a';
-		this.endpoint = 'http://localhost:8888/index.cfm/_api/json/v1/default/proxy/pipedrive/deals';
+		this.endpoint = _config.endpoint;
 
 		// configure object references
 		this.EntityObject = this.getApiEntity();

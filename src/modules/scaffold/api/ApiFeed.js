@@ -1,19 +1,56 @@
 import Mura from "mura.js";
 
 export class ApiFeed extends Mura.Feed  {
-	constructor({siteid, entityname}) {
-		super(arguments);
+	constructor(siteid, entityname, requestcontext) {
+		super(siteid, entityname, requestcontext);
 		this.init(siteid, entityname);
 		this.configuration = {};
 		this.endpoint = '';
-
+		this.queryString = '?cacheid=' + Math.random();
 		return this;
 	}
 
-	init = (siteid, entityname) => {
-		super.init(siteid, entityname);
+	where(property) {
+		if (property) {
+			return this.andProp(property);
+		}
+		return this;
 	}
 
+	prop(property) {
+		return this.andProp(property);
+	}
+
+	andProp(property) {
+		this.queryString += '&' + encodeURIComponent(property) +
+			'=';
+		this.propIndex++;
+		return this;
+	}
+
+	isEQ(criteria) {
+		if (typeof criteria== 'undefined' || criteria === '' || criteria ==	null) {
+			criteria = 'null';
+		}
+		this.queryString += encodeURIComponent(criteria);
+		return this;
+	}
+
+	sort(property, direction) {
+		throw 'Method NOT Implemented';
+	}
+
+	itemsPerPage(itemsPerPage) {
+		throw 'Method NOT Implemented';
+	}
+	
+	pageIndex(pageIndex) {
+		throw 'Method NOT Implemented';
+	}
+
+	maxItems(maxItems) {
+		throw 'Method NOT Implemented';
+	}
 
 	createMuraDataObject = (entityname,data) => {
 		const obj = {};
@@ -53,6 +90,49 @@ export class ApiFeed extends Mura.Feed  {
 		obj.data.totalpages = Math.ceil(data.length/obj.data.itemsperpage);
 
 		return obj;
+	}
+
+	getQuery = (params) => {
+		var self = this;
+
+		if(typeof params != 'undefined'){
+			for(var p in params){
+				if(params.hasOwnProperty(p)){
+					if(typeof self[p] == 'function'){
+						self[p](params[p]);
+					} else {
+						self.andProp(p).isEQ(params[p]);
+					}
+				}
+			}
+		}
+
+		return new Promise(function(resolve, reject) {	
+			self._requestcontext.request({
+				type: 'get',
+				url: self.endpoint,
+				success(resp) {
+					if (resp.data != 'undefined'  ) {
+						
+						var dataObj = self.createMuraDataObject(self.configuration.entityname,resp.data);
+						//console.log("dataObj",dataObj);
+						var returnObj = new Mura.EntityCollection(dataObj,self._requestcontext);
+						console.log("returnObj",returnObj.getAll().items);
+						if (typeof resolve == 'function') {
+							resolve(returnObj);
+						}
+					} else if (typeof reject == 'function') {
+						reject(resp);
+					}
+				},
+				error(resp) {
+					resp=Mura.parseString(resp.response);
+					if (typeof reject == 'function'){
+						reject(resp);
+					}
+				}
+			});
+		});
 	}
 }
 

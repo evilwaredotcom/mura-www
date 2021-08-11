@@ -23,6 +23,7 @@ export default class ApiConfig {
 
 	registerEntity = async() => {
 		Mura.entities[this.getEntityName()] = this.getEntityObject();
+		Mura.feeds=Mura.feeds || {} //take out with next Mura.js build
 		Mura.feeds[this.getEntityName()] = this.getFeedObject();
 	}
 

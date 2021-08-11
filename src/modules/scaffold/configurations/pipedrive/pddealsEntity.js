@@ -2,8 +2,8 @@ import { ApiEntity } from "../../api/ApiEntity";
 import PdDeals from "./pddeals";
 
 export default class PdDealsEntity extends ApiEntity {
-	constructor() {
-		super({});
+	constructor(properties,requestcontext) {
+		super(properties,requestcontext);
 		this.apiconfig = new PdDeals();
 		this.configuration = this.apiconfig.getConfiguration();
 		this.endpoint = this.apiconfig.getEndpoint();
