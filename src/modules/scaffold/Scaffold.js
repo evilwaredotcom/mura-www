@@ -42,50 +42,52 @@ export function Scaffold( {objectProperties,scaffoldProperties,objectparams,curr
 		}
 	}
 
-	const [objectProperties, setObjectProperties] = useState({});
-	const urlParams = Mura.getQueryStringParams();
+	return (()=>{
+		const [objectProperties, setObjectProperties] = useState({});
+		const urlParams = Mura.getQueryStringParams();
 
-	useEffect(() => {
-		if(objectparams.hasOwnProperty('scaffoldsource') && objectparams.scaffoldsource.length) {
-			getDynamicProps(objectparams).then((dynamicProps) => {
-				setObjectProperties(dynamicProps.objectProperties);
-				if(dynamicProps.objectProperties.currentObject) {
-					setCleanDataObject(dynamicProps);
-				}
-				setIsLoaded(true);
-			});
-		}
-	}, []);
-	
-	function setCleanDataObject(dynamicProps) {
-		var obj = {};
-		var exclude = ['links','isdeleted','isdirty','isnew','entityname'];
-		for (var i in dynamicProps.objectProperties.currentObject.properties) {
-			if(exclude.includes(i)) {
-				//skip
+		useEffect(() => {
+			if(objectparams.hasOwnProperty('scaffoldsource') && objectparams.scaffoldsource.length) {
+				getDynamicProps(objectparams).then((dynamicProps) => {
+					setObjectProperties(dynamicProps.objectProperties);
+					if(dynamicProps.objectProperties.currentObject) {
+						setCleanDataObject(dynamicProps);
+					}
+					setIsLoaded(true);
+				});
 			}
-			else {
-				if(isJson(dynamicProps.objectProperties.currentObject.properties[i])) {
-					obj[i] = JSON.parse(dynamicProps.objectProperties.currentObject.properties[i]);
+		}, []);
+		
+		function setCleanDataObject(dynamicProps) {
+			var obj = {};
+			var exclude = ['links','isdeleted','isdirty','isnew','entityname'];
+			for (var i in dynamicProps.objectProperties.currentObject.properties) {
+				if(exclude.includes(i)) {
+					//skip
 				}
 				else {
-					obj[i] = dynamicProps.objectProperties.currentObject.properties[i];
+					if(isJson(dynamicProps.objectProperties.currentObject.properties[i])) {
+						obj[i] = JSON.parse(dynamicProps.objectProperties.currentObject.properties[i]);
+					}
+					else {
+						obj[i] = dynamicProps.objectProperties.currentObject.properties[i];
+					}
 				}
 			}
+			setDataObject(obj);
 		}
-		setDataObject(obj);
-	}
 
-	if (isLoaded) {
-		return (
-			<Render objectProperties={objectProperties} changeHandler={changeHandler} currentID={currentID} dataObject={dataObject} clickHandler={clickHandler} objectparams={objectparams} props={props} />
-		)
-	} else {
-		return (
-			<div>...loading</div>
-		);
-	}
+		if (isLoaded) {
+			return (
+				<Render objectProperties={objectProperties} changeHandler={changeHandler} currentID={currentID} dataObject={dataObject} clickHandler={clickHandler} objectparams={objectparams} props={props} />
+			)
+		} else {
+			return (
+				<div>...loading</div>
+			);
+		}
 
+	})()
 }
 
 const Render = ({ objectProperties,objectparams,changeHandler,clickHandler,currentID,dataObject,...props }) => {
