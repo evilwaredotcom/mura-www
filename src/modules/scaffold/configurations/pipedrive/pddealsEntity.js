@@ -13,7 +13,7 @@ export default class PdDealsEntity extends ApiEntity {
 		return this.configuration;
 	}
 
-	loadBy = async (propertyName,propertyValue,params = {}) => {
+	loadBy = (propertyName,propertyValue,params = {}) => {
 		var params = super.loadBy(propertyName,propertyValue, params);
 		var self = this;
 
