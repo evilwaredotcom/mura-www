@@ -10,8 +10,8 @@ export default class PdDeals extends ApiConfig {
 			entityname: 'Pddeals',
 			fields: [
 					{
-						"name": "city",
-						"label": "City",
+						"name": "owner_name",
+						"label": "Owner Name",
 						"datatype": "varchar",
 						"rendertype": "textfield",
 						"list": true,
@@ -19,8 +19,8 @@ export default class PdDeals extends ApiConfig {
 						"default": null,
 					},
 					{
-						"name": "state",
-						"label": "state",
+						"name": "title",
+						"label": "Title",
 						"datatype": "varchar",
 						"rendertype": "textfield",
 						"list": true,

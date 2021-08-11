@@ -34,10 +34,6 @@ export class ApiEntity extends Mura.Entity  {
 		
 	}
 
-	getAll = () => {
-		return params;
-	}
-
 	//save().then, delete().then, loadBy('idprop',value).then, get, set, getAll()
 
 

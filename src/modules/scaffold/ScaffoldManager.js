@@ -220,6 +220,8 @@ export const getDynamicProps = async (objectparams,scaffoldProperties,objectProp
 
 */
 
+	  	console.log("NAME OF FEED",objectparams.scaffoldsource);
+
 		const feed = await  Mura.getFeed(objectparams.scaffoldsource);
 		/*
 		const data = await feed.getQuery()
@@ -249,7 +251,7 @@ export const getDynamicProps = async (objectparams,scaffoldProperties,objectProp
 	*/
 	console.log("FEEEEED",feed);
 	const query = await feed.getQuery();
-	console.log("QUEEEERY",query);
+	console.log("QUEEEERY",query.getAll());
 	
 	return {
 			scaffoldProperties: scaffoldProperties,
