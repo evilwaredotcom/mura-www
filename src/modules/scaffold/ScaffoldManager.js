@@ -69,41 +69,37 @@ export function ScaffoldManager( props ) {
 		}
 	}, [appState]);
 
-	if (!objectparams.dynamicProps) {
-		const urlParams = Mura.getQueryStringParams();
 
-		useEffect(() => {
-			if(objectparams.hasOwnProperty('scaffoldsource') && objectparams.scaffoldsource.length) {
-				setRenderSettings({...renderSettings,'pageindex': 1});
-				objectparams.pageindex = 1;
-				getObjectData(objectparams, scaffoldProperties, objectProperties, setCollection, setScaffoldProperties, setObjectProperties);
-			}
-		}, []);
+	const urlParams = Mura.getQueryStringParams();
 
-		if(scaffoldProperties && scaffoldProperties.length) {
-			switch(appState) {
-				case "new":
-				case "edit":
-					return (
-						<Scaffold currentID={currentID} actionHandler={actionHandler} objectProperties={objectProperties} scaffoldProperties={scaffoldProperties} objectparams={objectparams} props={props} />
-					)
-					break;
-				default: 
-					return (
-						<RenderScaffoldManager renderSettings={renderSettings} sortHandler={sortHandler} actionHandler={actionHandler} objectProperties={objectProperties} scaffoldProperties={scaffoldProperties} collection={collection}  objectparams={objectparams} props={props} />
-					)
-			}
-		  }
-		  else {
-			return (
-			 <div>Please choose an endpoint to render.</div>
-			)
-		  }
-	} else {
+	useEffect(() => {
+		if(objectparams.hasOwnProperty('scaffoldsource') && objectparams.scaffoldsource.length) {
+			setRenderSettings({...renderSettings,'pageindex': 1});
+			objectparams.pageindex = 1;
+			getObjectData(objectparams, scaffoldProperties, objectProperties, setCollection, setScaffoldProperties, setObjectProperties);
+		}
+	}, []);
+
+	if(scaffoldProperties && scaffoldProperties.length) {
+		switch(appState) {
+			case "new":
+			case "edit":
+				return (
+					<Scaffold currentID={currentID} actionHandler={actionHandler} objectProperties={objectProperties} scaffoldProperties={scaffoldProperties} objectparams={objectparams} props={props} />
+				)
+				break;
+			default: 
+				return (
+					<RenderScaffoldManager renderSettings={renderSettings} sortHandler={sortHandler} actionHandler={actionHandler} objectProperties={objectProperties} scaffoldProperties={scaffoldProperties} collection={collection}  objectparams={objectparams} props={props} />
+				)
+		}
+		}
+		else {
 		return (
-			<div>...loading</div>
+			<div>Please choose an endpoint to render.</div>
 		)
-	}
+		}
+
 }
 
 const RenderScaffoldManager = ({ actionHandler,sortHandler,renderSettings,objectProperties,scaffoldProperties,collection,objectparams,...props }) => {
