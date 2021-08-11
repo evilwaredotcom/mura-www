@@ -108,6 +108,7 @@ export class ApiFeed extends Mura.Feed  {
 		}
 
 		return new Promise(function(resolve, reject) {	
+			console.log(arguments)
 			self._requestcontext.request({
 				type: 'get',
 				url: self.endpoint,
@@ -117,7 +118,7 @@ export class ApiFeed extends Mura.Feed  {
 						var dataObj = self.createMuraDataObject(self.configuration.entityname,resp.data);
 						//console.log("dataObj",dataObj);
 						var returnObj = new Mura.EntityCollection(dataObj,self._requestcontext);
-						console.log("returnObj",returnObj.getAll().items);
+						
 						if (typeof resolve == 'function') {
 							resolve(returnObj);
 						}
