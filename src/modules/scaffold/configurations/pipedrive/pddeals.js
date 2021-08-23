@@ -5,40 +5,56 @@ import PdDealsFeed from "./pddealsFeed";
 
 export default class PdDeals extends ApiConfig {
 	constructor() {
-		
 		const _config = {
 			endpoint: Mura.getAPIEndpoint() + '/proxy/pipedrive/deals',
+			external: true,
 			entityname: 'Pddeals',
+			//fields: ['owner_name','title',"70fa899d40ddfcdadd00c3066dbae7d8621f56b0","e276bfae2df5553307253c06a17119b6573bcf2b"],
 			fields: [
-					{
-						"name": "owner_name",
-						"label": "Owner Name",
-						"datatype": "varchar",
-						"rendertype": "textfield",
-						"list": true,
-						"length": 100,
-						"default": null,
-					},
-					{
-						"name": "title",
-						"label": "Title",
-						"datatype": "varchar",
-						"rendertype": "textfield",
-						"list": true,
-						"default": null,
-					}
-			]
+				{
+					"name": 'owner_name',
+					"displayname": 'Owner',
+					"datatype": "varchar",
+					"rendertype": "textfield",
+					"listview": true,
+					"default": null
+				},
+				{
+					"name": 'title',
+					"displayname": 'Title',
+					"datatype": "varchar",
+					"rendertype": "textfield",
+					"listview": true,
+					"default": null
+				},
+				{
+					"displayname": '70fa899d40ddfcdadd00c3066dbae7d8621f56b0',
+					"remote": true,
+					"listview": false
+				},
+				{
+					"displayname": 'e276bfae2df5553307253c06a17119b6573bcf2b',
+					"remote": true,
+					"listview": false
+				}
+			],
+			hiddenfields: [],
+			hasremoteconfig: true,
+			remoteconfigendpoint: Mura.getAPIEndpoint() + '/proxy/pipedrive/dealFields',
 		};
-
+		
 		super({config:_config});
-
-		this.entityname = _config.entityname;
 		this.endpoint = _config.endpoint;
 
 		// configure object references
 		this.EntityObject = this.getApiEntity();
 		this.FeedObject = this.getApiFeed();
+	//	
 	}
+
+	getConfiguration = () => {
+		return this.config;
+	}	
 
 	getApiEntity() {
 		return PdDealsEntity;
@@ -54,4 +70,9 @@ export default class PdDeals extends ApiConfig {
 	getEndpoint = () => {
 		return this.endpoint;
 	}
+
+	properties = () => {
+		return this.getConfiguration();
+	}
+
 }

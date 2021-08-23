@@ -6,7 +6,12 @@ export class ApiFeed extends Mura.Feed  {
 		this.configuration = {};
 		this.endpoint = '';
 		this.queryString = '?cacheid=' + Math.random();
+		this.properties = this.createMuraFeedObject(entityname,[]);
 		return this;
+	}
+
+	set = (data) => {
+		this.properties.items = data;
 	}
 
 	where(property) {
@@ -36,22 +41,30 @@ export class ApiFeed extends Mura.Feed  {
 	}
 
 	sort(property, direction) {
-		throw 'Method NOT Implemented';
+		this.properties.sortby = property;
+		this.properties.sortdir = direction == "ASC" ? "ASC" : "DESC";
+		this.queryString += '&sortby=' + encodeURIComponent(property) + '&sortdir=' + encodeURIComponent(direction);
+		return this;
 	}
 
 	itemsPerPage(itemsPerPage) {
-		throw 'Method NOT Implemented';
+		this.properties.itemsperpage = itemsPerPage;
+		this.queryString += '&itemsPerPage=' + encodeURIComponent(itemsPerPage);
+		return this;
 	}
 	
 	pageIndex(pageIndex) {
-		throw 'Method NOT Implemented';
+		this.properties.pageindex = pageIndex;
+		this.queryString += '&pageindex=' + encodeURIComponent(pageIndex);
+		return this;
 	}
 
 	maxItems(maxItems) {
-		throw 'Method NOT Implemented';
+		this.properties.maxitems = maxItems;
+		this.queryString += '&maxitems=' + encodeURIComponent(maxItems);
 	}
 
-	createMuraDataObject = (entityname,data) => {
+	createCollectionObject = (entityname,data) => {
 		const obj = {};
 
 		for(var i = 0;i < data.length;i++) {
@@ -59,13 +72,11 @@ export class ApiFeed extends Mura.Feed  {
 		}
 	
 		obj.items = data;
-		console.log("createMuraDataObject",obj);
 		return obj;
 	}
 
 	createMuraFeedObject = (entityname,data,indexfield = 'id') => {
 		const obj = {
-			"data": {
 				"endindex": 0,
 				"startindex": 0,
 				"entityname": entityname,
@@ -73,22 +84,46 @@ export class ApiFeed extends Mura.Feed  {
 				"totalitems": 0,
 				"links": {},
 				"itemsperpage": 20,
-				"items": [],
-				"pageindex": 0
-			},
-			"method": "findAll",
-			"apiversion": "v1"
+				"pageindex": 0,
+				"indexfield": indexfield,
+				"sorton": '',
+				"sortdir": 'DESC'
 		}
 
 		for(var i = 0;i < data.length;i++) {
 			data[i].entityname = entityname;
 		}
 
-		obj.data.items = data;
-		obj.data.totalitems = data.length;
-		obj.data.totalpages = Math.ceil(data.length/obj.data.itemsperpage);
+		obj.items = data;
+		obj.totalitems = data.length;
+		obj.totalpages = Math.ceil(data.length/obj.itemsperpage);
+		obj.endindex = Math.floor(data.length/obj.itemsperpage);
 
 		return obj;
+	}
+
+	getRemoteConfiguration = async () => {
+		const remoteconfig = await Mura.get(this.configuration.remoteconfigendpoint)
+			.then(function(response) {
+				const result = {
+					success: false,
+					data: [],
+					hash: {}
+				};
+				if(response.success) {
+					result.success = true;
+					for(var i = 0;i < response.data.length;i++) {
+						var key = response.data[i].key;
+						result.hash[key]=i;
+					}
+					result.data = response.data;
+					return result;
+				}
+				else {
+					return result;
+				}
+		});
+		return remoteconfig;
 	}
 
 	getQuery = (params) => {
@@ -107,16 +142,23 @@ export class ApiFeed extends Mura.Feed  {
 		}
 
 		return new Promise(function(resolve, reject) {	
-			console.log(arguments)
 			self._requestcontext.request({
 				type: 'get',
-				url: self.endpoint,
-				success(resp) {
+				url: self.endpoint + self.queryString,
+				async success(resp) {
 					if (resp.data != 'undefined'  ) {
-						
-						var dataObj = self.createMuraDataObject(self.configuration.entityname,resp.data);
-						//console.log("dataObj",dataObj);
+						self.set(resp.data);
+						var dataObj = self.createCollectionObject(self.configuration.entityname,resp.data);
 						var returnObj = new Mura.EntityCollection(dataObj,self._requestcontext);
+						if(self.configuration.hasremoteconfig) {
+							const remoteconf = await self.getRemoteConfiguration();
+							if(remoteconf.success) {
+								self.configuration.remotefields = remoteconf.data;
+								self.configuration.remotefieldshash = remoteconf.hash;
+							}
+						}
+						returnObj.configuration = self.configuration;
+						console.log("RETURNOBJ",returnObj);
 						
 						if (typeof resolve == 'function') {
 							resolve(returnObj);

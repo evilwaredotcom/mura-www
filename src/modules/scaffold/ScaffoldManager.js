@@ -4,6 +4,9 @@ import { getMuraConfig } from '@murasoftware/next-core';
 import Scaffold from './Scaffold';
 import ScaffoldConfigurations from './configurations/ScaffoldConfigurations';
 import ApiConfig from './api/ApiConfig';
+import { faDumpsterFire } from '@fortawesome/free-solid-svg-icons';
+import { ApiFeed } from './api/ApiFeed';
+import PdDealsFeed from './configurations/pipedrive/pddealsFeed';
 
 export function ScaffoldManager( props ) {
 	const objectparams = Object.assign({}, props);
@@ -111,13 +114,14 @@ const RenderScaffoldManager = ({ actionHandler,sortHandler,renderSettings,object
 			<div className={`scaffold-table--cell scaffold-table--cell--action scaffold-table--column-0 scaffold-table--row-top`}>
 			<div className="scaffold-table--content"></div>
 			</div>
+
 			{
 				scaffoldProperties.map((scaffoldProperty,index) => {
-					if(scaffoldProperty.hasOwnProperty('list') && scaffoldProperty.list == true) {
+					if(scaffoldProperty.hasOwnProperty('listview') && (scaffoldProperty.listview == true || scaffoldProperty.listview == 'true')) {
 						return (
 							<div key={'header'+index} className={`scaffold-table--cell scaffold-table--cell--content scaffold-table--column-${index+1} scaffold-table--row-top`}>
 								<div className={`scaffold-table--content scaffold-sort ${renderSettings.sortby == scaffoldProperty.field ? 'scaffold-sort-current' : ''}	`} onClick={(e) => sortHandler(scaffoldProperty.field)}>
-									{scaffoldProperty.label}
+									{scaffoldProperty.displayname}
 								</div>
 							</div>
 						)
@@ -158,11 +162,11 @@ const RenderScaffoldManagerItem = ({ item,objectProperties,scaffoldProperties,ro
 	</div>
 	{
 		scaffoldProperties.map((scaffoldProperty,index) => {
-			if(scaffoldProperty.hasOwnProperty('list') && scaffoldProperty.list == true) {
+			if(scaffoldProperty.hasOwnProperty('listview') && (scaffoldProperty.listview == true || scaffoldProperty.listview == 'true')) {
 				return (
 				<div key={'cell'+row+'_'+index} className={`scaffold-table--cell scaffold-table--cell--content scaffold-table--column-${index+1} scaffold-table--row-${row}`}>
 					<div className="scaffold-table--content">
-						{renderValue(item.get(scaffoldProperty.field))}
+						{renderValue(item.get(scaffoldProperty.name))}
 					</div>
 				</div>
 				)
@@ -176,7 +180,7 @@ const RenderScaffoldManagerItem = ({ item,objectProperties,scaffoldProperties,ro
 const countScaffoldProps = (scaffoldProperties) => {
 	var ct = 1;
 	for(var i = 0;i < scaffoldProperties.length;i++) {
-		ct = scaffoldProperties[i].hasOwnProperty('list') && scaffoldProperties[i].list == true ? ct+1 : ct;
+		ct = scaffoldProperties[i].hasOwnProperty('listview') && (scaffoldProperties[i].listview == true || scaffoldProperties[i].listview == 'true') ? ct+1 : ct;
 	}
 
 	return ct;
@@ -196,65 +200,47 @@ export const getDynamicProps = async (objectparams,scaffoldProperties,objectProp
 	const scaffoldConfigurations = new ScaffoldConfigurations();
 	const apiConfig = scaffoldConfigurations.getConfiguration(objectparams.scaffoldsource);
 
-	if(apiConfig instanceof ApiConfig) {
-		const scaffoldFields = apiConfig.getScaffoldFields(objectparams.scaffoldsource);
-	}
-	else {
-		console.log("CONFIGURATION NOT FOUND IN ScaffoldConfigurations");
-		return {};
-	}
+	const feed = Mura.getFeed(objectparams.scaffoldsource);
 
-/*
-	const entity = await Mura.getEntity(objectparams.scaffoldsource)
-		.loadBy('user_id',1)
-		.then(function(item){
-			console.log("getDynamicProps SCAFFOLDMANAGER",item);
-		  },
-		  function(error) {
-			  console.log("getDynamicProps SCAFFOLDMANAGER Error",error);
-		  });
-
-*/
-
-	  	//console.log("NAME OF FEED",objectparams.scaffoldsource);
-
-		const feed = Mura.getFeed(objectparams.scaffoldsource);
-
-		//console.log(feed)
-		/*
-		const data = await feed.getQuery()
-			.then(function(items){
-				return items;
-		  },
-		  function(error) {
-			  console.log("ERROR",error);
-		});
-		*/
-	/*
 	if(objectparams.maxitems) {
-		feed.maxItems(objectparams.maxitems);
+			feed.maxItems(objectparams.maxitems);
 	}
+
 	if(objectparams.itemsperpage) {
 		feed.itemsPerPage(objectparams.itemsperpage);
 	}
 	if(objectparams.pageindex) {
 		feed.pageIndex(objectparams.pageindex);
 	}
-	// if(objectparams.fields) {
-	// 	feed.fields(objectparams.fields);
-	// }
 	if(objectparams.sortby) {
 		feed.sort(objectparams.sortby,objectparams.sortdirection );
 	}
-	*/
-	console.log("FEEEEED",feed);
-	const query = await feed.getQuery();
-	console.log("QUEEEERY",query.getAll().items);
-	
+
+	const entityCollection = await feed.getQuery()
+		.then(function(items){
+			return items;
+		},
+		function(error) {
+			console.log("ERROR",error);
+	});
+
+	if(typeof entityCollection.configuration != 'undefined') {
+		scaffoldProperties = entityCollection.configuration.fields;
+	}
+	else {
+		scaffoldProperties = await Mura.getBean(objectparams.scaffoldsource)
+		.invoke(
+			'properties',
+			{
+			}
+		);
+	}
+
 	return {
 			scaffoldProperties: scaffoldProperties,
 			objectProperties: objectProperties,
-			feed: query.getAll()
+			feed: feed,
+			entityCollection: entityCollection
 	};
 
 }
@@ -273,9 +259,19 @@ export const getLayout=function(layout) {
 
 function getObjectData(objectparams, scaffoldProperties, objectProperties, setCollection, setScaffoldProperties, setObjectProperties) {
 	getDynamicProps(objectparams, scaffoldProperties, objectProperties, 'list').then((dynamicProps) => {
-		const coll = new Mura.EntityCollection(dynamicProps.feed, Mura._requestcontext);
+		if(dynamicProps.entityCollection instanceof Mura.EntityCollection) {
+			var coll = dynamicProps.entityCollection;	
+		}
+		else {
+			var coll = new Mura.EntityCollection(dynamicProps.feed, Mura._requestcontext);
+		}
 		setCollection(coll);
-		setScaffoldProperties(dynamicProps.scaffoldProperties);
+		if(coll.configuration && coll.configuration.fields) {
+			setScaffoldProperties(coll.configuration.fields);
+		}
+		else {
+			setScaffoldProperties(dynamicProps.scaffoldProperties.properties);
+		}
 		setObjectProperties(dynamicProps.objectProperties);
 	});
 }

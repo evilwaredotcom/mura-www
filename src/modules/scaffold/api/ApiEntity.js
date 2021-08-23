@@ -25,6 +25,28 @@ export class ApiEntity extends Mura.Entity  {
 		
 	}
 
+	get = (property) => {
+		if(this.properties[property]) {
+			return this.properties[property];
+		}
+		return null;
+	}
+
+	set = (property,val) => {
+		if(property.length) {
+			this.properties[property] = val;
+		}
+		return this;
+	}
+
+	loadBy(propertyName, propertyValue, params) {
+		propertyName = propertyName || 'id';
+
+		console.log("BOING");
+		return "shubert";
+		
+	}
+	
 	//save().then, delete().then, loadBy('idprop',value).then, get, set, getAll()
 
 

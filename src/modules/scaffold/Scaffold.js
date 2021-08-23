@@ -185,22 +185,23 @@ export const getDynamicProps = async props => {
 	var objectProperties = [];
 	var currentObject;
 
-
 	if(props.scaffoldsource) {
-		var objectData = await Mura.getBean(props.scaffoldsource)
-		.invoke(
-			'properties',
-			{
-			}
-		);
+		const objectData = await Mura.getBean(props.scaffoldsource);
 	}
 	else {
 		return objectProperties;
 	}
 
+	console.log("props.currentID",props.currentID);
+
 	if(props.currentID) {
-		currentObject = await Mura.getBean(props.scaffoldsource).loadBy('id',props.currentID);
+		console.log("BEF");
+		currentObject = await Mura.getEntity(props.scaffoldsource);
+		console.log("AFT",currentObject);
+		var fif = await currentObject.loadBy('id',props.currentID);
+		console.log("AFTAFT",fif);
 	}
+
 
 	// sort properties, first if by orderno
 	if(objectData.properties[0].hasOwnProperty('orderno')) {
