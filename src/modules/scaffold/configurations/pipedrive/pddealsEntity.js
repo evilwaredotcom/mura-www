@@ -13,69 +13,38 @@ export default class PdDealsEntity extends ApiEntity {
 		return this.configuration;
 	}
 
-	loadBy = (propertyName,propertyValue,params = {}) => {
-		var params = super.loadBy(propertyName,propertyValue, params);
-		var self = this;
 
-		return new Promise(function(resolve, reject) {
-			Mura.get(self.endpoint + '?' + '&' + propertyName + '=' + propertyValue)
-				.then(function(resp) {	
-					console.log("RESPONSE",resp);
-					if(resp.success && resp.success == true) {
-						for(var i in resp.data) {
-							self.properties[i] = resp.data[i];
-						}
-						resolve(self);
-					}
-					else {
-						reject(resp);
-					}
-			});	
-		});		
+	paramsToQueryString = (params) => {
+		var queryString = '?';
+		for(var p in params) {
+			if(p == 'id') {
+				queryString = "/" + params[p];
+				break;
+			}
+		}
+		return queryString;
 	}
 
-	/*
-	save = async (eventHandler) => {
-		eventHandler=eventHandler || {};
-
-		Mura.normalizeRequestHandler(eventHandler);
-
+	save = (saveData) => {
 		var self = this;
 
-		return new Promise(function(resolve, reject) {
-			var temp = Mura.deepExtend({},self.getAll());
+		// no id, post, else put
 
+		return new Promise(function(resolve, reject) {
 			self._requestcontext.request({
-				type: 'post',
-				url: this.endpoint,
-				data:	self.getAll(),
+				type: 'put',
+				url: self.endpoint + "/" + saveData.id,
+				data:	saveData,
 				success(resp) {
-					if (resp.data != 'undefined') {
-						self.set(resp.data)
-						self.set('isdirty',false );
-						if (self.get('saveerrors') ||
-							Mura.isEmptyObject(self.getErrors())
-						) {
-							if (typeof eventHandler.success ==	'function') {
-									eventHandler.success(self);
-							}
-						} else {
-							if (typeof eventHandler.error == 'function') {
-									eventHandler.error(self);
-							}
-						}
+					if (resp.success) {
+						resolve(resp);
 					} else {
 						self.set('errors',resp.error);
-						if (typeof eventHandler.error == 'function') {
-							eventHandler.error(self);
-						}
+						reject(resp);
 					}
-				},
-				progress:eventHandler.progress,
-				abort: eventHandler.abort
+				}
 			});
 		});
 	}
-	*/
 
 }

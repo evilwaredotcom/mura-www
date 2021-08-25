@@ -67,7 +67,13 @@ export function Scaffold( {objectProperties,scaffoldProperties,objectparams,curr
 				}
 				else {
 					if(isJson(dynamicProps.objectProperties.currentObject.properties[i])) {
-						obj[i] = JSON.parse(dynamicProps.objectProperties.currentObject.properties[i]);
+						try {
+							var inst = JSON.parse(dynamicProps.objectProperties.currentObject.properties[i]);
+						}
+						catch(e) {
+							var inst = dynamicProps.objectProperties.currentObject.properties[i];
+						}
+						obj[i] = inst;
 					}
 					else {
 						obj[i] = dynamicProps.objectProperties.currentObject.properties[i];
@@ -99,19 +105,21 @@ const Render = ({ objectProperties,objectparams,changeHandler,clickHandler,curre
 				objectProperties.properties.map((item, index) => {
 					// do not render hidden rendertypes
 					if(item.fieldtype && item.fieldtype == 'one-to-many') {
-						return (<div>R: {item.displayname}</div>)
+						return (<div>--R: {item.displayname}</div>)
 					}
 					if(item.fieldtype && item.fieldtype == 'one-to-one') {
-						return (<div>R: {item.displayname}</div>)
+						return (<div>--R: {item.displayname}</div>)
 					}
 					if(item.fieldtype && item.fieldtype == 'many-to-one') {
-						return (<div>R: {item.displayname}</div>)
+						return (<div>--R: {item.displayname}</div>)
 					}					
 					else if(!item.rendertype || item.rendertype != 'hidden') {
 						if(item.rendertype) {
+//							console.log("RenderByRenderType",item);
 							return RenderByRenderType(item,changeHandler,dataObject,props);
 						}
 						else {
+//							console.log("RenderByVarType",item);
 							return RenderByVarType(item,changeHandler,dataObject,props);
 						}
 					}
@@ -150,12 +158,12 @@ export const RenderByRenderType = ( item,changeHandler,dataObject,props ) => {
 			break;
 		default: 
 			return (
-				<div key={item.name}>{item.name} unknown</div>
+				<div key={item.name}>{item.displayname}: ?? ??</div>
 			)
 	}
 }
 
-export const RenderByVarType = ( item,props ) => {
+export const RenderByVarType = ( item,changeHandler,dataObject,props ) => {
 	switch(item.datatype) {
 		case 'varchar':
 		case 'char':
@@ -165,46 +173,60 @@ export const RenderByVarType = ( item,props ) => {
 			}
 			else if(item.length && item.length <= 255) {
 				return (
-					<ScaffoldTextField key={item.name} props={props} item={item} />
+					<ScaffoldTextField key={item.name} dataObject={dataObject} props={props} changeHandler={changeHandler} item={item} />
 				)
 			}
 			else {
 				return (
-					<ScaffoldTextArea key={item.name} props={props} item={item} />
+					<ScaffoldTextArea key={item.name} dataObject={dataObject} props={props} changeHandler={changeHandler} item={item} />
 				)
 			}
 			break;
 		default: 
 			return (
-				<div>{item.name}: ???</div>
+				<ScaffoldTextField key={item.name} dataObject={dataObject} props={props} changeHandler={changeHandler} item={item} />
 			)
 	}
 }
 
 export const getDynamicProps = async props => {
+
 	var objectProperties = [];
 	var currentObject;
-
-	if(props.scaffoldsource) {
-		const objectData = await Mura.getBean(props.scaffoldsource);
-	}
-	else {
-		return objectProperties;
-	}
-
-	console.log("props.currentID",props.currentID);
+	var objectData;
 
 	if(props.currentID) {
-		console.log("BEF");
-		currentObject = await Mura.getEntity(props.scaffoldsource);
-		console.log("AFT",currentObject);
-		var fif = await currentObject.loadBy('id',props.currentID);
-		console.log("AFTAFT",fif);
+		currentObject = await Mura.getEntity(props.scaffoldsource).loadBy('id',props.currentID);
+	}
+	else {
+		return -1;
+	}
+
+	if(props.scaffoldsource) {
+		if(currentObject.configuration) {
+			objectData = currentObject.configuration.fields;
+		}
+		else {
+			var bean = await Mura.getEntity(props.scaffoldsource);
+			objectData = await bean.invoke(
+				'properties',
+				{
+				}
+			);
+		}
+	}
+	else {
+		return -1;
 	}
 
 
+	console.log("CURRENT OBJECT",currentObject);
+	// if is an array, then order is per array
+	if(Array.isArray(objectData)) {
+		objectProperties = objectData;
+	}
 	// sort properties, first if by orderno
-	if(objectData.properties[0].hasOwnProperty('orderno')) {
+	else if(objectData.properties && objectData.hasOwnProperty('orderno')) {
 		objectProperties = objectData.properties.sort((a,b) => {
 			if(a.orderno > b.orderno) {
 				return 1
@@ -266,22 +288,49 @@ const handleSave = (response) => {
 
 export const saveObject = async (props,object) => {
 	//newObject.setsiteid('default');
+
+	console.log("saveObject props",props);
+	console.log("saveObject object",object);
+
 	for(var value in object) {
 		if( Array.isArray(object[value]) ) {
 			object[value] = JSON.stringify(object[value]);
 		}
 	}
+
+	console.log("saveObject object",object);
   
-	var newObject = await Mura.getBean(props.scaffoldsource)
-		.set(object);
+	var newObject = await Mura.getBean(props.scaffoldsource);
 
-	newObject.set('id',Mura.createUUID());
+	// API Objects
+	if(newObject._remoteAPIEntity) {
+		const formfields = newObject.configuration.fields;
+		const saveFields = newObject.configuration.savefields ? newObject.configuration.savefields : [];
+		console.log("savefieldssavefieldssavefields",saveFields);
+		const saveData = {};
+		for(var i in formfields) {
+			saveData[formfields[i].name] = object[formfields[i].name];
+		}
+		for(var i in saveFields) {
+			saveData[saveFields[i]] = object[saveFields[i]];
+		}
 
-	await newObject.save()
+		await newObject.save(saveData)
 		.then(
 			handleSave,
 			handleSave
 		)
+	}
+	// Mura ORM Objects
+	else {
+		newObject.set(object);
+		newObject.set('id',Mura.createUUID());
+		await newObject.save()
+		.then(
+			handleSave,
+			handleSave
+		)
+	}
 
 	return true;
 }

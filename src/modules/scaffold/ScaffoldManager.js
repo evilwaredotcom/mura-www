@@ -157,7 +157,7 @@ const RenderScaffoldManagerItem = ({ item,objectProperties,scaffoldProperties,ro
 	<>
 	<div className={`scaffold-table--cell scaffold-table--cell--action scaffold-table--column-0 scaffold-table--row-${row}`}>
 		<div className="scaffold-table--content">
-			<button name="edit" type="button" onClick={(e) => actionHandler(e,'edit',item.get('id'))}>Edit</button>		
+			<button name="edit" type="button"  data-id={item.get('id')} onClick={(e) => actionHandler(e,'edit',item.get('id'))}>Edit</button>		
 		</div>
 	</div>
 	{

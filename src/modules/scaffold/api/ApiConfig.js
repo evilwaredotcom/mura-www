@@ -65,8 +65,8 @@ export default class ApiConfig {
 			*/
 			// ignorefields: inverse of "fields", where all fields but below will be rendered
 			ignorefields: [],
-			// postfields: fields to be included in any remote post
-			hiddenfields: [],
+			// savefields: fields to be included in any remote post
+			savefields: [],
 			// remotefields: feilds pulled from remote config
 			remotefields: [],
 			// remotefieldshash: a hash pointer of name/arraypos for remotefields

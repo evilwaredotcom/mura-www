@@ -1,6 +1,6 @@
 export default function ScaffoldDropdown( {item,changeHandler,dataObject,...props} ) {
 	return (
-		<div>
+		<div key={item.name}>
 			<label>{item.displayname}</label>
 			<select name={item.name}
 			defaultValue={dataObject.hasOwnProperty(item.name) ? dataObject[item.name]  : item.default}

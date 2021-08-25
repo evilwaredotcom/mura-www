@@ -8,7 +8,7 @@ export default function ScaffoldCheckboxGroup( {item,changeHandler,dataObject,..
 	}, []);
 
 	return (
-		<div>
+		<div key={item.name}>
 			{
 				item.options.map((opt) => {
 					var key = opt.name + '_' + opt.value;

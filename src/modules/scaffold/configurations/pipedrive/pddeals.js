@@ -9,7 +9,7 @@ export default class PdDeals extends ApiConfig {
 			endpoint: Mura.getAPIEndpoint() + '/proxy/pipedrive/deals',
 			external: true,
 			entityname: 'Pddeals',
-			//fields: ['owner_name','title',"70fa899d40ddfcdadd00c3066dbae7d8621f56b0","e276bfae2df5553307253c06a17119b6573bcf2b"],
+			//fields: ['owner_name','title','formatted_weighted_value',"70fa899d40ddfcdadd00c3066dbae7d8621f56b0","e276bfae2df5553307253c06a17119b6573bcf2b"],
 			fields: [
 				{
 					"name": 'owner_name',
@@ -28,19 +28,27 @@ export default class PdDeals extends ApiConfig {
 					"default": null
 				},
 				{
-					"displayname": '70fa899d40ddfcdadd00c3066dbae7d8621f56b0',
+					"name": 'value',
+					"displayname": 'Value',
+					"datatype": "varchar",
+					"rendertype": "textfield",
+					"listview": true,
+					"default": null
+				},
+				{
+					"name": '70fa899d40ddfcdadd00c3066dbae7d8621f56b0',
 					"remote": true,
 					"listview": false
 				},
 				{
-					"displayname": 'e276bfae2df5553307253c06a17119b6573bcf2b',
+					"name": 'e276bfae2df5553307253c06a17119b6573bcf2b',
 					"remote": true,
 					"listview": false
 				}
 			],
-			hiddenfields: [],
+			savefields: ['id'],
 			hasremoteconfig: true,
-			remoteconfigendpoint: Mura.getAPIEndpoint() + '/proxy/pipedrive/dealFields',
+			remoteconfigendpoint: Mura.getAPIEndpoint() + '/proxy/pipedrive/dealFields'
 		};
 		
 		super({config:_config});

@@ -24,7 +24,7 @@ export function Scaffold( props ) {
 			)
 		} else {
 			return (
-				<div>???</div>
+				<div>:::???</div>
 			);
 		}
 	} else {
@@ -123,7 +123,7 @@ export const RenderByVarType = ( item,props ) => {
 			break;
 		default: 
 				return (
-					<div>{item.name}: ???</div>
+					<div>{item.name}: ????</div>
 				)
 	}
 }
