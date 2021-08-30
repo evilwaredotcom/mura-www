@@ -40,6 +40,16 @@ export class ApiFeed extends Mura.Feed  {
 		return this;
 	}
 
+	containsValue(criteria) {
+		this.queryString += encodeURIComponent('containsValue^' + criteria);
+		return this;
+	}
+
+	contains(criteria) {
+		this.queryString += encodeURIComponent('containsValue^' + criteria);
+		return this;
+	}
+
 	sort(property, direction) {
 		this.properties.sortby = property;
 		this.properties.sortdir = direction == "ASC" ? "ASC" : "DESC";
@@ -147,7 +157,6 @@ export class ApiFeed extends Mura.Feed  {
 				url: self.endpoint + self.queryString,
 				async success(resp) {
 					if (resp.data != 'undefined'  ) {
-						self.set(resp.data);
 						var dataObj = self.createCollectionObject(self.configuration.entityname,resp.data);
 						var returnObj = new Mura.EntityCollection(dataObj,self._requestcontext);
 						if(self.configuration.hasremoteconfig) {
@@ -158,8 +167,8 @@ export class ApiFeed extends Mura.Feed  {
 							}
 						}
 						returnObj.configuration = self.configuration;
-						console.log("RETURNOBJ",returnObj);
-						
+
+						self.set(resp.data);					
 						if (typeof resolve == 'function') {
 							resolve(returnObj);
 						}

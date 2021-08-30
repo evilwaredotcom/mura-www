@@ -26,6 +26,7 @@ export default class ApiConfig {
 			endpoint: Mura.getAPIEndpoint(),
 			external: true,
 			entityname: 'unkownn',
+			idfield: 'id',
 			/* 
 				fields: fields to be rendered in scaffold form, either:
 					- an array of field names, which will render fields as textfields

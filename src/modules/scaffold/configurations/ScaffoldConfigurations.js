@@ -1,4 +1,4 @@
-import FirebaseAnimals from "./firebaseanimals";
+//import FirebaseAnimals from "./firebaseanimals";
 import KickfireLocale from "./kickfire/kickfirelocale";
 import ScaffoldTestOne from "./ScaffoldTestOne";
 import PdDeals from "./pipedrive/pddeals";

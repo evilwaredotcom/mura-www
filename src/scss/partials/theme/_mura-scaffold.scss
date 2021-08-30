@@ -139,7 +139,7 @@ div[data-object="ProductCompare"]{
         flex-flow: row wrap;
         justify-content: center;
         height: 100%;
-        padding: 38px 0 0;
+        padding: 19px 0 0;
         color:$black;
         text-align:left;
         font-size:1rem;
@@ -151,6 +151,12 @@ div[data-object="ProductCompare"]{
             color:$white;
             font-weight:$font-weight-bold;
         }
+        &.scaffold-filter {
+        }
+        &.scaffold-filter-input {
+            width: 100%;
+            padding: 1px 4px;
+        }        
         &.scaffold-sort {
             cursor: pointer;
         }
@@ -174,9 +180,9 @@ div[data-object="ProductCompare"]{
             }
         }
         button {
-            padding: 2px 12px;
-            height: 30px;
-            margin-top: 10px;
+            padding: 2px 7px;
+            height: 25px;
+            font-size: small;
         }
     }
 }

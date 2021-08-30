@@ -27,24 +27,50 @@ export default class PdDealsEntity extends ApiEntity {
 
 	save = (saveData) => {
 		var self = this;
+		const idfield = this.getIDField();
 
-		// no id, post, else put
+		if(saveData[idfield] == null) {
+			saveData.isnew = true;
+		}
 
-		return new Promise(function(resolve, reject) {
-			self._requestcontext.request({
-				type: 'put',
-				url: self.endpoint + "/" + saveData.id,
-				data:	saveData,
-				success(resp) {
-					if (resp.success) {
-						resolve(resp);
-					} else {
-						self.set('errors',resp.error);
-						reject(resp);
+		// NEW
+		if(saveData.isnew == true) {
+			return new Promise(function(resolve, reject) {
+				console.log("SAVING DATA: ",saveData);
+				self._requestcontext.request({
+					type: 'push',
+					url: self.endpoint,
+					data:	saveData,
+					success(resp) {
+						if (resp.success) {
+							resolve(resp);
+						} else {
+							self.set('errors',resp.error);
+							reject(resp);
+						}
 					}
-				}
+				});
 			});
-		});
+		}
+		// UPDATE
+		else {
+			return new Promise(function(resolve, reject) {
+				console.log("UPDATING DATA: ",saveData);
+				self._requestcontext.request({
+					type: 'put',
+					url: self.endpoint + "/" + saveData.id,
+					data:	saveData,
+					success(resp) {
+						if (resp.success) {
+							resolve(resp);
+						} else {
+							self.set('errors',resp.error);
+							reject(resp);
+						}
+					}
+				});
+			});
+		}
 	}
 
 }

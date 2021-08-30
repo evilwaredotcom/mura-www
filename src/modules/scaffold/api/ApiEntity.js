@@ -56,6 +56,22 @@ export class ApiEntity extends Mura.Entity  {
 		return remoteconfig;
 	}
 
+	setRemoteConfiguration = async () => {
+		const self = this;
+		const remoteconf = await self.getRemoteConfiguration();
+		if(remoteconf.success) {
+			self.configuration.remotefields = remoteconf.data;
+			self.configuration.remotefieldshash = remoteconf.hash;
+			for(var i = 0;i < self.configuration.fields.length;i++) {
+				const field = self.configuration.fields[i];
+				if(field.remote && field.name && self.configuration.remotefieldshash[field.name]) {
+					// extract the remote aka API field configuration from the remotefields array via the remotefieldshash
+					field = self.extendRemoteField(field,self.configuration.remotefields[self.configuration.remotefieldshash[field.name]]);
+				}
+			}
+		}
+	}
+
 	loadBy = async (propertyName, propertyValue, params) => {
 		propertyName = propertyName || 'id';
 		propertyValue = propertyValue || this.get(propertyName) || 'null';
@@ -70,8 +86,6 @@ export class ApiEntity extends Mura.Entity  {
 			params
 		);
 		params[propertyName] = propertyValue;
-
-		console.log("LOADING BY",propertyName, propertyValue, params);
 
 		return new Promise(function(resolve, reject) {	
 			params = Mura.extend({
@@ -92,10 +106,7 @@ export class ApiEntity extends Mura.Entity  {
 						else {
 							self.set(resp.data);
 						}
-						if (typeof resolve == 'function') {
-							resolve(self);
-						}						
-
+						
 						resp.data._remoteAPIEntity = true;
 						
 						var dataObj = self.createCollectionObject(self.configuration.entityname,resp.data);
@@ -103,23 +114,12 @@ export class ApiEntity extends Mura.Entity  {
 						returnObj.configuration = self.configuration;
 
 						if(returnObj.configuration.hasremoteconfig) {
-							const remoteconf = await self.getRemoteConfiguration();
-							if(remoteconf.success) {
-								returnObj.configuration.remotefields = remoteconf.data;
-								returnObj.configuration.remotefieldshash = remoteconf.hash;
-								for(var i = 0;i < returnObj.configuration.fields.length;i++) {
-									const field = returnObj.configuration.fields[i];
-									if(field.remote && field.name && returnObj.configuration.remotefieldshash[field.name]) {
-										// extract the remote aka API field configuration from the remotefields array via the remotefieldshash
-										field = self.extendRemoteField(field,returnObj.configuration.remotefields[returnObj.configuration.remotefieldshash[field.name]]);
-									}
-								}
-							}
+							await self.setRemoteConfiguration();
 						}
-						
+
 						if (typeof resolve == 'function') {
 							resolve(self);
-						}
+						}					
 					} else if (typeof reject == 'function') {
 						reject(resp);
 					}
@@ -152,30 +152,62 @@ export class ApiEntity extends Mura.Entity  {
 		return queryString;
 	}
 
+	getIDField = () => {
+		return this.configuration.idfield;
+	}
 
 	save = (saveData) => {
 		var self = this;
+		const idfield = this.getIDField();
 
-		return new Promise(function(resolve, reject) {
-			console.log("SAVING DATA: ",saveData);
+		if(saveData[idfield] == null) {
+			saveData.isnew = true;
+		}
 
-			self._requestcontext.request({
-				type: 'put',
-				url: self.getendpoint(),
-				data:	saveData,
-				success(resp) {
-					if (resp.data != 'undefined') {
-						resolve(resp);
-					} else {
-						self.set('errors',resp.error);
-						if (typeof eventHandler.error == 'function') {
-							reject(self);
+		// NEW
+		if(saveData.isnew == true) {
+			return new Promise(function(resolve, reject) {
+				resolve(self);
+
+				self._requestcontext.request({
+					type: 'push',
+					url: self.getendpoint(),
+					data:	saveData,
+					success(resp) {
+						if (resp.data != 'undefined') {
+							resolve(resp);
+						} else {
+							self.set('errors',resp.error);
+							if (typeof eventHandler.error == 'function') {
+								reject(self);
+							}
 						}
 					}
-				}
+				});
 			});
-		});
+		}
+		// UPDATE
+		else {
+			return new Promise(function(resolve, reject) {
+				resolve(self);
 
+				self._requestcontext.request({
+					type: 'put',
+					url: self.getendpoint(),
+					data:	saveData,
+					success(resp) {
+						if (resp.data != 'undefined') {
+							resolve(resp);
+						} else {
+							self.set('errors',resp.error);
+							if (typeof eventHandler.error == 'function') {
+								reject(self);
+							}
+						}
+					}
+				});
+			});
+		}
 	}
 
 

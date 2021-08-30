@@ -16,12 +16,14 @@ export function ScaffoldManager( props ) {
 	const [collection,setCollection]=useState({});
 	const [scaffoldProperties,setScaffoldProperties]=useState([]);
 	const [objectProperties,setObjectProperties]=useState([]);
-	const [renderSettings,setRenderSettings]=useState({'sortdirection':'asc','itemsperpage':10});
+	const [renderSettings,setRenderSettings]=useState({'sortdirection':'asc','itemsperpage':10,'filterby':{}});
+	var delayFilter;
 
 	objectparams.fields=objectparams.fields || getDefaultQueryPropsFromLayout(DynamicCollectionLayout,objectparams).fields || 'Image,Date,Title,Summary,Credits,Tags';
 	objectparams.sortby = renderSettings.sortby ? renderSettings.sortby : '';
 	objectparams.sortdirection = renderSettings.sortdirection;
 	objectparams.itemsperpage = renderSettings.itemsperpage;
+	objectparams.filterby = renderSettings.filterby;
 	objectparams.pageindex = renderSettings.pageindex ? renderSettings.pageindex : 1;
 
 	const sortHandler = (name) => {
@@ -37,10 +39,17 @@ export function ScaffoldManager( props ) {
 		e.preventDefault();
 		setCurrentID(null);
 
+
+		if(name == 'clearfilter') {
+			Mura(".scaffold-filter-input").val('');
+			setRenderSettings({...renderSettings,'filterby': {}});
+			setAppState('refresh');	
+		}
 		if(name == 'edit') {
 			setCurrentID(id);
 			setAppState('edit');
 		}
+
 		if(name == 'itemsper') {
 			setRenderSettings({...renderSettings,'itemsperpage': e.target.value});
 			setAppState('refresh');	
@@ -63,6 +72,31 @@ export function ScaffoldManager( props ) {
 		else if(name == 'cancel') {
 			setAppState('refresh');
 		}
+	}
+
+	const filterHandler = (e,name,val) => {
+		e.preventDefault();
+		clearTimeout(delayFilter);
+
+
+		delayFilter = setTimeout(
+			function() {
+				var filter = {};
+				Mura.each(".scaffold-filter-input",function(index,val) {
+					var name = Mura(this).attr('data-name');
+					var val = Mura(this).val();
+
+					if(val.toString().length)
+						filter[name] = val;
+					else
+						delete filter[name];
+				});
+				setRenderSettings({...renderSettings,'filterby': filter});
+				setAppState('refresh');			
+				
+			},
+			550
+		);
 	}
 
 	useEffect(() => {
@@ -88,12 +122,12 @@ export function ScaffoldManager( props ) {
 			case "new":
 			case "edit":
 				return (
-					<Scaffold currentID={currentID} actionHandler={actionHandler} objectProperties={objectProperties} scaffoldProperties={scaffoldProperties} objectparams={objectparams} props={props} />
+					<Scaffold currentID={currentID} filterHandler={filterHandler} actionHandler={actionHandler} objectProperties={objectProperties} scaffoldProperties={scaffoldProperties} objectparams={objectparams} props={props} />
 				)
 				break;
 			default: 
 				return (
-					<RenderScaffoldManager renderSettings={renderSettings} sortHandler={sortHandler} actionHandler={actionHandler} objectProperties={objectProperties} scaffoldProperties={scaffoldProperties} collection={collection}  objectparams={objectparams} props={props} />
+					<RenderScaffoldManager renderSettings={renderSettings} filterHandler={filterHandler} sortHandler={sortHandler} actionHandler={actionHandler} objectProperties={objectProperties} scaffoldProperties={scaffoldProperties} collection={collection}  objectparams={objectparams} props={props} />
 				)
 		}
 		}
@@ -105,16 +139,43 @@ export function ScaffoldManager( props ) {
 
 }
 
-const RenderScaffoldManager = ({ actionHandler,sortHandler,renderSettings,objectProperties,scaffoldProperties,collection,objectparams,...props }) => {
+const RenderScaffoldManager = ({ filterHandler,actionHandler,sortHandler,renderSettings,objectProperties,scaffoldProperties,collection,objectparams,...props }) => {
 	const items = collection.get('items');
 	const colCount = countScaffoldProps(scaffoldProperties);
 
 	return (
 		<div className={`scaffold-table scaffold-table-careers props-${colCount}-up`}>
-			<div className={`scaffold-table--cell scaffold-table--cell--action scaffold-table--column-0 scaffold-table--row-top`}>
-			<div className="scaffold-table--content"></div>
-			</div>
 
+
+			<div className={`scaffold-table--cell scaffold-table--cell--action scaffold-table--column-0 scaffold-table--row-top`}>
+				<div className="scaffold-table--content">
+					<button name="clearfilter" type="button" onClick={(e) => actionHandler(e,'clearfilter')}>Clear</button>
+				</div>
+			</div>
+			{
+				scaffoldProperties.map((scaffoldProperty,index) => {
+					if((scaffoldProperty.hasOwnProperty('filter') && (scaffoldProperty.filter == true || scaffoldProperty.filter == 'true'))) {
+						return (
+							<div key={'header'+index} className={`scaffold-table--cell scaffold-table--cell--content scaffold-table--column-${index+1} scaffold-table--row-top`}>
+								<div className={`scaffold-table--content scaffold-filter`}>
+									<input className={`scaffold-table--content scaffold-filter-input`} data-name={scaffoldProperty.name} placeholder={`filter: ${scaffoldProperty.displayname}`} onChange={(e) => filterHandler(e)}/>
+								</div>
+							</div>
+						)
+					}
+					else if(scaffoldProperty.hasOwnProperty('listview') && (scaffoldProperty.listview == true || scaffoldProperty.listview == 'true')) {
+						return (
+							<div key={'header'+index} className={`scaffold-table--cell scaffold-table--cell--content scaffold-table--column-${index+1} scaffold-table--row-top`}>
+								<div className="scaffold-table--content"></div>
+							</div>
+						)
+					}
+				})
+			}
+
+			<div className={`scaffold-table--cell scaffold-table--cell--action scaffold-table--column-0 scaffold-table--row-top`}>
+				<div className="scaffold-table--content"></div>
+			</div>
 			{
 				scaffoldProperties.map((scaffoldProperty,index) => {
 					if(scaffoldProperty.hasOwnProperty('listview') && (scaffoldProperty.listview == true || scaffoldProperty.listview == 'true')) {
@@ -157,7 +218,7 @@ const RenderScaffoldManagerItem = ({ item,objectProperties,scaffoldProperties,ro
 	<>
 	<div className={`scaffold-table--cell scaffold-table--cell--action scaffold-table--column-0 scaffold-table--row-${row}`}>
 		<div className="scaffold-table--content">
-			<button name="edit" type="button"  data-id={item.get('id')} onClick={(e) => actionHandler(e,'edit',item.get('id'))}>Edit</button>		
+			<button name="edit" type="button"  data-id={item.get('id')} onClick={(e) => actionHandler(e,'edit',item.get('id'))}>Edit</button>
 		</div>
 	</div>
 	{
@@ -202,8 +263,10 @@ export const getDynamicProps = async (objectparams,scaffoldProperties,objectProp
 
 	const feed = Mura.getFeed(objectparams.scaffoldsource);
 
+	console.log("GETTING FEED!",objectparams);
+
 	if(objectparams.maxitems) {
-			feed.maxItems(objectparams.maxitems);
+		feed.maxItems(objectparams.maxitems);
 	}
 
 	if(objectparams.itemsperpage) {
@@ -214,6 +277,18 @@ export const getDynamicProps = async (objectparams,scaffoldProperties,objectProp
 	}
 	if(objectparams.sortby) {
 		feed.sort(objectparams.sortby,objectparams.sortdirection );
+	}
+
+	var hasProps = false;
+	for(var i in objectparams.filterby) {
+		hasProps = true;
+	}
+
+	if(hasProps) {
+		feed.where();
+		for(var i in objectparams.filterby) {
+			feed.andProp(i).contains(objectparams.filterby[i]);
+		}
 	}
 
 	const entityCollection = await feed.getQuery()

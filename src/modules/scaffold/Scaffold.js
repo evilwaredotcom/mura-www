@@ -18,18 +18,19 @@ export function Scaffold( {objectProperties,scaffoldProperties,objectparams,curr
 	}
 
 	const[dataObject,setDataObject] = useState({});
+	const[saveObject,setSaveObject] = useState({});
 	const[isLoaded,setIsLoaded] = useState(false);
 	var gondor = {};
 
 	const changeHandler = (name,value) => {
-		setDataObject({...dataObject, [name]: value});
+		setSaveObject({...saveObject, [name]: value});
 	}
 	
 	const clickHandler = async (e,name) => {
 		e.preventDefault();
 		
 		if(name == 'save') {
-			var response = await saveObject(objectparams,dataObject);
+			var response = await doSaveObject(objectparams,dataObject,saveObject);
 
 			if(actionHandler) {
 				actionHandler(e,'saved');
@@ -133,6 +134,10 @@ const Render = ({ objectProperties,objectparams,changeHandler,clickHandler,curre
 
 export const RenderByRenderType = ( item,changeHandler,dataObject,props ) => {
 	switch(item.rendertype) {
+		case 'hidden':
+			return (
+				<></>
+			)
 		case 'textfield':
 			return (
 				<ScaffoldTextField key={item.name} dataObject={dataObject} props={props} changeHandler={changeHandler} item={item} />
@@ -199,9 +204,13 @@ export const getDynamicProps = async props => {
 		currentObject = await Mura.getEntity(props.scaffoldsource).loadBy('id',props.currentID);
 	}
 	else {
-		return -1;
+		currentObject = await Mura.getEntity(props.scaffoldsource);
 	}
 
+	if(currentObject._remoteAPIEntity) {
+		await currentObject.setRemoteConfiguration();
+	}
+	
 	if(props.scaffoldsource) {
 		if(currentObject.configuration) {
 			objectData = currentObject.configuration.fields;
@@ -219,8 +228,6 @@ export const getDynamicProps = async props => {
 		return -1;
 	}
 
-
-	console.log("CURRENT OBJECT",currentObject);
 	// if is an array, then order is per array
 	if(Array.isArray(objectData)) {
 		objectProperties = objectData;
@@ -265,6 +272,17 @@ export const getDynamicProps = async props => {
 			currentObject: currentObject
 		}
 	};
+
+}
+
+const setDefaults = (object) => {
+	var data = object.getAll();
+	for(var i in data) {
+		if(data[i] == 'null') {
+			data[i] = null;
+		}
+	}
+	object.set(data);
 }
 
 const renderOptionLists = (objectProperties) => {
@@ -286,36 +304,34 @@ const handleSave = (response) => {
 	console.log("SAVED!!!!",response);
 }
 
-export const saveObject = async (props,object) => {
+export const doSaveObject = async (props,dataObject,saveObject) => {
 	//newObject.setsiteid('default');
 
-	console.log("saveObject props",props);
-	console.log("saveObject object",object);
+	const newObject = Mura.extend(dataObject,saveObject);
 
-	for(var value in object) {
-		if( Array.isArray(object[value]) ) {
-			object[value] = JSON.stringify(object[value]);
+	for(var value in newObject) {
+		if( Array.isArray(newObject[value]) ) {
+			newObject[value] = JSON.stringify(newObject[value]);
 		}
 	}
 
-	console.log("saveObject object",object);
-  
-	var newObject = await Mura.getBean(props.scaffoldsource);
+	var newBean = await Mura.getBean(props.scaffoldsource);
 
 	// API Objects
-	if(newObject._remoteAPIEntity) {
-		const formfields = newObject.configuration.fields;
-		const saveFields = newObject.configuration.savefields ? newObject.configuration.savefields : [];
-		console.log("savefieldssavefieldssavefields",saveFields);
+	if(newBean._remoteAPIEntity) {
+		const formfields = newBean.configuration.fields;
+		const saveFields = newBean.configuration.savefields ? newBean.configuration.savefields : [];
 		const saveData = {};
 		for(var i in formfields) {
-			saveData[formfields[i].name] = object[formfields[i].name];
+			saveData[formfields[i].name] = formatSaveData(newObject[formfields[i].name]);
 		}
 		for(var i in saveFields) {
-			saveData[saveFields[i]] = object[saveFields[i]];
+			saveData[saveFields[i]] = formatSaveData(newObject[saveFields[i]]);
 		}
 
-		await newObject.save(saveData)
+		saveData[newBean.configuration.idfield] = formatSaveData(newObject[newBean.configuration.idfield]);
+
+		await newBean.save(saveData)
 		.then(
 			handleSave,
 			handleSave
@@ -323,9 +339,9 @@ export const saveObject = async (props,object) => {
 	}
 	// Mura ORM Objects
 	else {
-		newObject.set(object);
-		newObject.set('id',Mura.createUUID());
-		await newObject.save()
+		newBean.set(newObject);
+		newBean.set('id',Mura.createUUID());
+		await newBean.save()
 		.then(
 			handleSave,
 			handleSave
@@ -333,6 +349,19 @@ export const saveObject = async (props,object) => {
 	}
 
 	return true;
+}
+
+function formatSaveData(str) {
+	if(str == null) {
+		return null;
+	}
+	else if(typeof str == 'undefined') {
+		return null;
+	}
+	else if(!str.toString().length) {
+		return null;
+	}
+	return str;
 }
 
 function isJson(item) {

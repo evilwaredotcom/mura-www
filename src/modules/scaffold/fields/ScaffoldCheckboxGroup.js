@@ -18,7 +18,6 @@ export default function ScaffoldCheckboxGroup( {item,changeHandler,...props} ) {
 			checked[e.target.value] = true;
 		}
 		else {
-			console.log("NOT!");
 			delete checked[e.target.value];
 		}
 		setCheckedItems(checked);

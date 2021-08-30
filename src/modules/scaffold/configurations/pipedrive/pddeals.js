@@ -10,14 +10,25 @@ export default class PdDeals extends ApiConfig {
 			external: true,
 			entityname: 'Pddeals',
 			//fields: ['owner_name','title','formatted_weighted_value',"70fa899d40ddfcdadd00c3066dbae7d8621f56b0","e276bfae2df5553307253c06a17119b6573bcf2b"],
+			idfield: 'id',
 			fields: [
+				{
+					"name": 'id',
+					"displayname": 'ID',
+					"datatype": "varchar",
+					"rendertype": "hidden",
+					"listview": true,
+					"default": null,
+					"filter": true
+				},
 				{
 					"name": 'owner_name',
 					"displayname": 'Owner',
 					"datatype": "varchar",
 					"rendertype": "textfield",
 					"listview": true,
-					"default": null
+					"default": null,
+					"filter": true
 				},
 				{
 					"name": 'title',
@@ -25,7 +36,8 @@ export default class PdDeals extends ApiConfig {
 					"datatype": "varchar",
 					"rendertype": "textfield",
 					"listview": true,
-					"default": null
+					"default": null,
+					"filter": true
 				},
 				{
 					"name": 'value',
@@ -35,6 +47,16 @@ export default class PdDeals extends ApiConfig {
 					"listview": true,
 					"default": null
 				},
+				/*
+				{
+					"name": 'org_id',
+					"displayname": 'Org',
+					"datatype": "varchar",
+					"rendertype": "textfield",
+					"listview": false,
+					"default": '12386836'
+				},
+				*/
 				{
 					"name": '70fa899d40ddfcdadd00c3066dbae7d8621f56b0',
 					"remote": true,
@@ -46,7 +68,16 @@ export default class PdDeals extends ApiConfig {
 					"listview": false
 				}
 			],
-			savefields: ['id'],
+			/*
+			relationships: [
+				{
+					object: "pdorganizations",
+					displayname: "Organizations",
+					key: "org_id"
+				}
+			],
+			*/
+			savefields: [],
 			hasremoteconfig: true,
 			remoteconfigendpoint: Mura.getAPIEndpoint() + '/proxy/pipedrive/dealFields'
 		};
